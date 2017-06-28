@@ -71,3 +71,16 @@ def euler_forward_randomICs(f, t0, T, dt, distname, distparams):
         paths.append(x)
 
     return paths, np.linspace(t0, T, (T - t0 ) / dt + 1)
+
+
+def heston_stochastic_vol(mu, sigma, t0, T, dt, x0, reruns=100,
+        alpha=1., sigmabar=1., corr=0., vol_vol=0.):
+
+    time = np.linspace(t0, T, (T - t0 ) / dt + 1)
+    paths = []
+    x =  np.empty( (len(time), len(x0)) )
+
+    for run in range(reruns):
+        x[0] = x0
+
+

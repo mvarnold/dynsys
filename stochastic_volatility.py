@@ -7,19 +7,19 @@ import numpy as np
 
 
 def heston_model(mu, t0, T, dt, x0, reruns=100,
-        alpha=1., sigmabar=1., corr=0., vol_vol=0.):
+        alpha=1., sigmabar=1., corr=0.5, vol_vol=0.25):
 
     time = np.linspace(t0, T, (T - t0 ) / dt + 1)
     paths = []
-    x =  np.empty( (len(time), len(x0)) )
 
     for run in range(reruns):
+        x =  np.empty( (len(time), len(x0)) )
         x[0] = x0
 
         for n in range(len(time) - 1):
             t = time[n]
             dW_x = np.random.normal(loc=0, scale=np.sqrt(dt), size=1)
-            dZ = np.random.norma(loc=0, scale=np.sqrt(dt), size=1)
+            dZ = np.random.normal(loc=0, scale=np.sqrt(dt), size=1)
             dW_s = np.sqrt(1. - corr**2) * dZ + corr * dW_x
 
             # volatility equation

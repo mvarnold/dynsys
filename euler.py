@@ -6,7 +6,7 @@ import numpy as np
 from scipy import stats
 
 
-def euler_forward(f, t0, T, dt, x0, get_time=True):
+def euler_forward(f, t0, T, dt, x0, fargs=None, get_time=True):
     time = np.linspace(t0, T, (T - t0 ) / dt + 1)
     if type(x0) is float:
         x = np.empty(len(time))
@@ -16,7 +16,13 @@ def euler_forward(f, t0, T, dt, x0, get_time=True):
 
     for n in range(len(time)-1):
         t = time[n]
-        x[n+1] = x[n] + f(x[n], t) * dt
+
+        if fargs is None:
+            x[n+1] = x[n] + f(x[n], t) * dt
+
+        elif fargs is not None:
+            x[n+1] = x[n] + f(x[n], t, **fargs) * dt
+
     if get_time is False:
         return x
     return x, time
@@ -35,13 +41,23 @@ def euler_ito_sde(mu, sigma, t0, T, dt, x0, reruns=100):
             x = np.empty(len(time))
         elif dims == 'many':
             x =  np.empty( (len(time), len(x0)) )
+
         x[0] = x0
 
-        for n in range(len(time)-1):
-            t = time[n]
-            x[n+1] = x[n] + mu(x[n], t) * dt + sigma(x[n], t) * np.random.normal(loc=0,
+        if dims == 'one':
+            for n in range(len(time)-1):
+                t = time[n]
+                x[n+1] = x[n] + mu(x[n], t) * dt + sigma(x[n], t) * np.random.normal(loc=0,
                     scale=np.sqrt(dt), size=1)
-        paths.append(x)
+            paths.append(x)
+
+        elif dims == 'many':
+            for n in range(len(time)-1):
+                t = time[n]
+                x[n+1] = x[n] + mu(x[n], t) * dt + sigma(x[n], t) * np.random.normal(loc=0,
+                    scale=np.sqrt(dt), size=len(x0))
+            paths.append(x)
+
 
     return np.asarray(paths), time
 

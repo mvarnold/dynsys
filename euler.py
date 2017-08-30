@@ -71,3 +71,61 @@ def euler_forward_randomICs(f, t0, T, dt, distname, distparams):
         paths.append(x)
 
     return paths, np.linspace(t0, T, (T - t0 ) / dt + 1)
+
+
+def euler_ito_sde_poisson(mu, lambda_, t0, T, dt, x0, dist, distparams,
+        reruns=100):
+    time = np.linspace(t0, T, (T - t0 ) / dt + 1)
+    paths = []
+
+    if type(x0) is not float:
+        raise TypeError('Poisson is implemented in only one variable (for now)')
+
+    for run in range(reruns):
+        x = np.empty(len(time))
+
+        x[0] = x0
+
+        for n in range(len(time)-1):
+            t = time[n]
+
+            # calculate number of jumps
+            N = stats.poisson.rvs(mu=lambda_(x[n], t) * dt, loc=0, size=1)[0]
+            rv_dist = getattr(stats, dist)
+            rvs = rv_dist.rvs(size=N, **distparams)
+            pois_sum = sum(rvs)
+
+            x[n+1] = x[n] + mu(x[n], t) * dt + pois_sum
+        paths.append(x)
+
+    return np.asarray(paths), time
+
+
+def euler_ito_sde_gaussian_poisson(mu, sigma, lambda_, t0, T, dt, x0, dist,
+        dist_loc, dist_scale, dist_mult, reruns=100):
+    time = np.linspace(t0, T, (T - t0 ) / dt + 1)
+    paths = []
+
+    if type(x0) is not float:
+        raise TypeError('Poisson is implemented in only one variable (for now)')
+
+    for run in range(reruns):
+        x = np.empty(len(time))
+
+        x[0] = x0
+
+        for n in range(len(time)-1):
+            t = time[n]
+
+            # calculate number of jumps
+            N = stats.poisson.rvs(mu=lambda_(x[n], t) * dt, loc=0, size=1)[0]
+            rv_dist = getattr(stats, dist)
+            rvs = rv_dist.rvs(size=N, loc=dist_loc(x[n], t),
+                    scale=dist_scale(x[n], t))
+            pois_sum = dist_mult(x[n], t) * sum(rvs)
+
+            x[n+1] = x[n] + mu(x[n], t) * dt + sigma(x[n], t) * \
+            np.random.normal(loc=0, scale=np.sqrt(dt), size=1) + pois_sum
+        paths.append(x)
+
+    return np.asarray(paths), time

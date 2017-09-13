@@ -177,7 +177,7 @@ class PoissonSDE(SDE):
 class GaussianPoissonSDE(SDE):
 
     def run(self, reruns=100, result=False):
-        paths, time = _euler_ito_sde_poisson(self.mu, self.sigma, self.lambda_,
+        paths, time = _euler_ito_sde_gaussian_poisson(self.mu, self.sigma, self.lambda_,
                 self.t0, self.T, self.dt, self.x0, self.dist, self.dist_loc,
                 self.dist_scale, self.dist_mult, reruns)
         self.sample_paths = paths

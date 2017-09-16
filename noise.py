@@ -49,7 +49,7 @@ def double_exponential(dim, vol, dt, T, x0):
     if type(x0) is float:
         x = [x0]
         for n in range(len(time) - 1):
-            lr = np.random.choice([-1., 1.], size=2)
+            lr = np.random.choice([-1., 1.], size=1)
             t = time[n]
             x[n+1] = x[n] + vol(x[n], t) * lr * stats.expon.rvs(loc=0, scale=np.sqrt(dt),
                 size=1)
@@ -57,10 +57,11 @@ def double_exponential(dim, vol, dt, T, x0):
         x =  np.empty( (len(time), len(x0)) )
         x[0] = x0
         for n in range(len(time) - 1):
-            lr = np.random.choice([-1., 1.], size=2)
+            lr = np.random.choice([-1., 1.], size=len(x0))
             t = time[n]
             x[n+1] = x[n] + vol(x[n], t) * lr * stats.expon.rvs(loc=np.zeros(len(x0)),
                     scale=[np.sqrt(dt) for _ in range(len(x0))], size=len(x0))
+
     return x
 
 
